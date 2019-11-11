@@ -39,7 +39,7 @@ namespace Maybe.Test.BloomFilter
         [Trait("Category", "Property")]
         public Property Contains_With5PercentFalsePositives_ShouldHaveLessThan5PercentErrors()
         {
-            return Prop.ForAll(Arb.From(Gen.Choose(1, 10000)), Arb.From(Gen.Choose(1, 99)), (stepRange, errorRate) =>
+            return Prop.ForAll(Arb.From(Gen.Choose(1, 5000)), Arb.From(Gen.Choose(1, 99)), (stepRange, errorRate) =>
             {
                 var filter = new BloomFilter<int>(stepRange, errorRate/100d);
                 foreach (var num in Enumerable.Range(1, stepRange))
@@ -98,21 +98,27 @@ namespace Maybe.Test.BloomFilter
             }
         }
 
-        [Fact]
-        [Trait("Category", "Unit")]
-        public void AddAndCheck_WhenItemHasBeenAddedBefore_ShouldReturnTrue()
+        [Property]
+        [Trait("Category", "Property")]
+        public Property AddAndCheck_WhenItemHasBeenAddedBefore_ShouldReturnTrue()
         {
-            var filter = new BloomFilter<int>(50, 0.02);
-            filter.Add(42);
-            Assert.True(filter.AddAndCheck(42));
+            return Prop.ForAll(Arb.Default.Int32(), testData =>
+            {
+                var filter = new BloomFilter<int>(50, 0.02);
+                filter.Add(testData);
+                return filter.AddAndCheck(testData).ToProperty();
+            });
         }
 
-        [Fact]
-        [Trait("Category", "Unit")]
-        public void AddAndCheck_WhenItemHasntBeenAddedBefore_ShouldReturnFalse()
+        [Property]
+        [Trait("Category", "Property")]
+        public Property AddAndCheck_WhenItemHasntBeenAddedBefore_ShouldReturnFalse()
         {
-            var filter = new BloomFilter<int>(50, 0.02);
-            Assert.False(filter.AddAndCheck(42));
+            return Prop.ForAll(Arb.Default.Int32(), testData =>
+            {
+                var filter = new BloomFilter<int>(50, 0.02);
+                return (!filter.AddAndCheck(testData)).ToProperty();
+            });
         }
 
         [Fact]
